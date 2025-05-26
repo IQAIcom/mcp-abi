@@ -1,0 +1,64 @@
+{
+	"name": "@iqai/mcp-abi",
+	"version": "0.0.1",
+	"description": "Mcp server for ABI",
+	"main": "src/index.ts",
+	"type": "module",
+	"bin": {
+		"mcp-abi": "dist/index.js"
+	},
+	"files": ["dist"],
+	"scripts": {
+		"build": "tsc && shx chmod +x dist/index.js",
+		"prepare": "husky",
+		"watch": "tsc --watch",
+		"start": "node dist/index.js",
+		"publish-packages": "pnpm run build && changeset publish",
+		"format": "biome format . --write",
+		"lint": "biome check ."
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"packageManager": "pnpm@10.7.1",
+	"exports": {
+		".": {
+			"import": "./src/index.ts",
+			"require": "./src/index.js"
+		},
+		"./tool-selector": {
+			"import": "./src/tool-selector.ts",
+			"require": "./src/tool-selector.js"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/IQAIcom/mcp-abi.git"
+	},
+	"keywords": ["mcp", "ABI", "iqagents"],
+	"author": "IQAI",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/IQAIcom/mcp-abi/issues"
+	},
+	"homepage": "https://github.com/IQAIcom/mcp-abi#readme",
+	"devDependencies": {
+		"@biomejs/biome": "*",
+		"@changesets/cli": "^2.29.4",
+		"@types/node": "^22.15.19",
+		"husky": "^9.1.7",
+		"lint-staged": "^15.0.0",
+		"shx": "^0.3.4",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"@biomejs/biome": "*",
+		"@types/node": "^22.15.19",
+		"dedent": "^1.6.0",
+		"fastmcp": "^1.27.7",
+		"gql.tada": "^1.8.10",
+		"graphql-request": "^7.1.2",
+		"viem": "^2.29.2",
+		"zod": "^3.25.1"
+	}
+}

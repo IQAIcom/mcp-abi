@@ -1,0 +1,13 @@
+{
+	"agents": [
+		{
+			"name": "agent1",
+			"model": "model1"
+		},
+		{
+			"name": "agent2",
+			"model": "model2"
+		}
+	],
+	"defaultModel": "model1"
+}
