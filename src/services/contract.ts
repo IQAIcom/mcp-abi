@@ -1,7 +1,7 @@
 import type { Abi, PublicClient, WalletClient } from "viem";
-import { WalletService } from "./wallet.js";
-import { withRetry, formatResult } from "../lib/helpers.js";
 import type { Chain } from "viem/chains";
+import { formatResult, withRetry } from "../lib/helpers.js";
+import { WalletService } from "./wallet.js";
 
 export class ContractService {
 	private publicClient: PublicClient;
@@ -32,7 +32,7 @@ export class ContractService {
 		console.log(`Contract service initialized for ${contractAddress}`);
 	}
 
-	async callReadFunction(functionName: string, args: any[] = []) {
+	async callReadFunction(functionName: string, args: unknown[] = []) {
 		console.log("Calling read function:", functionName, args);
 		return await withRetry(
 			async () => {
@@ -48,7 +48,7 @@ export class ContractService {
 		);
 	}
 
-	async callWriteFunction(functionName: string, args: any[] = []) {
+	async callWriteFunction(functionName: string, args: unknown[] = []) {
 		console.log("Calling write function:", functionName, args);
 		if (!this.walletClient || !this.walletClient.account) {
 			throw new Error("Wallet client not initialized.");

@@ -1,5 +1,5 @@
+import type { Abi, Address, Chain } from "viem";
 import { z } from "zod";
-import type { Address, Abi, Chain } from "viem";
 
 export const ContractPluginOptionsSchema = z.object({
 	name: z.string(),

@@ -1,5 +1,9 @@
 import { FastMCP } from "fastmcp";
-import { generateTool } from "./tools/generateTool.js";
+import { ContractService } from "./services/contract.js";
+import { generateToolsFromAbi } from "./tools/generateTool.js";
+import { extractFunctionsFromAbi } from "./lib/helpers.js";
+import { DEFAULT_CHAIN } from "./lib/constants.js";
+import type { AbiPluginOptions } from "./types.js";
 
 async function main() {
 	console.log("Initializing MCP ABI Server...");
@@ -9,7 +13,38 @@ async function main() {
 		version: "0.0.1",
 	});
 
-	server.addTool(generateTool);
+	const options: AbiPluginOptions;
+
+	const {
+		abi,
+		contractName,
+		contractAddress,
+		privateKey,
+		chain = DEFAULT_CHAIN,
+	} = options;
+
+	const contractService = new ContractService(
+		abi,
+		contractAddress,
+		privateKey,
+		chain,
+	);
+
+	const functions = extractFunctionsFromAbi(abi);
+
+	if (functions.length === 0) {
+		throw new Error("No callable functions found in the provided ABI");
+	}
+
+	const tools = generateToolsFromAbi(
+		contractService,
+		contractName,
+		functions,
+	);
+
+	server.addTool(tools);
+
+	// server.addTool(generateTool);
 
 	try {
 		await server.start({

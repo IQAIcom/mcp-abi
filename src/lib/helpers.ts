@@ -1,5 +1,5 @@
-import type { FunctionMetadata } from "../types.js";
 import type { Abi } from "viem";
+import type { FunctionMetadata } from "../types.js";
 
 export function extractFunctionsFromAbi(abi: Abi): FunctionMetadata[] {
 	return abi
@@ -34,18 +34,22 @@ export async function withRetry<T>(
 			retryCount++;
 
 			if (retryCount >= maxRetries) {
-				console.error(`${logPrefix}Operation failed after ${maxRetries} attempts`);
+				console.error(
+					`${logPrefix}Operation failed after ${maxRetries} attempts`,
+				);
 				throw error;
 			}
 
-			console.log(`${logPrefix}Retrying operation (attempt ${retryCount}/${maxRetries}) in ${backoffMs}ms...`);
+			console.log(
+				`${logPrefix}Retrying operation (attempt ${retryCount}/${maxRetries}) in ${backoffMs}ms...`,
+			);
 			await new Promise((resolve) => setTimeout(resolve, backoffMs));
 			backoffMs *= 2;
 		}
 	}
 }
 
-export function formatResult(result: any) {
+export function formatResult(result: unknown): unknown {
 	if (typeof result === "bigint") {
 		return result.toString();
 	}
@@ -55,9 +59,11 @@ export function formatResult(result: any) {
 	}
 
 	if (result && typeof result === "object") {
-		const formatted = {};
+		const formatted: { [key: string]: unknown } = {};
 		for (const key in result) {
-			formatted[key] = formatResult(result[key]);
+			formatted[key] = formatResult(
+				(result as { [key: string]: unknown })[key],
+			);
 		}
 		return formatted;
 	}

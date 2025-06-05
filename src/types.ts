@@ -12,7 +12,13 @@ export interface AbiPluginOptions {
 export interface FunctionMetadata {
 	name: string;
 	stateMutability: string;
-	inputs: any[];
-	outputs: any[];
+	inputs: unknown[];
+	outputs: unknown[];
 	isReadFunction: boolean;
+}
+
+export interface Tools {
+	name: string;
+	description: string;
+	execute: (args: string) => Promise<string>;
 }
