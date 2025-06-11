@@ -1,8 +1,8 @@
 import { FastMCP } from "fastmcp";
+import { DEFAULT_CHAIN } from "./lib/constants.js";
+import { extractFunctionsFromAbi } from "./lib/helpers.js";
 import { ContractService } from "./services/contract.js";
 import { generateToolsFromAbi } from "./tools/generateTool.js";
-import { extractFunctionsFromAbi } from "./lib/helpers.js";
-import { DEFAULT_CHAIN } from "./lib/constants.js";
 import type { AbiPluginOptions } from "./types.js";
 
 async function main() {
@@ -13,7 +13,7 @@ async function main() {
 		version: "0.0.1",
 	});
 
-	const options: AbiPluginOptions;
+	const options: AbiPluginOptions = {};
 
 	const {
 		abi,
@@ -22,6 +22,10 @@ async function main() {
 		privateKey,
 		chain = DEFAULT_CHAIN,
 	} = options;
+
+	if (!abi || !contractName || !contractAddress || !privateKey) {
+		throw new Error("Missing required ABI plugin options.");
+	}
 
 	const contractService = new ContractService(
 		abi,
@@ -36,15 +40,11 @@ async function main() {
 		throw new Error("No callable functions found in the provided ABI");
 	}
 
-	const tools = generateToolsFromAbi(
-		contractService,
-		contractName,
-		functions,
-	);
+	const tools = generateToolsFromAbi(contractService, contractName, functions);
 
-	server.addTool(tools);
-
-	// server.addTool(generateTool);
+	for (const tool of tools) {
+		server.addTool(tool);
+	}
 
 	try {
 		await server.start({

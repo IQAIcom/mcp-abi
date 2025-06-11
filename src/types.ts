@@ -1,11 +1,12 @@
+import type { Context } from "fastmcp";
 import type { Abi, Chain } from "viem";
 
 export interface AbiPluginOptions {
-	abi: Abi;
-	contractName: string;
-	contractAddress: `0x${string}`;
-	description: string;
-	privateKey: string;
+	abi?: Abi;
+	contractName?: string;
+	contractAddress?: `0x${string}`;
+	description?: string;
+	privateKey?: string;
 	chain?: Chain;
 }
 
@@ -20,5 +21,5 @@ export interface FunctionMetadata {
 export interface Tools {
 	name: string;
 	description: string;
-	execute: (args: string) => Promise<string>;
+	execute: (args: unknown, context: Context<undefined>) => Promise<string>;
 }

@@ -4,7 +4,6 @@ import type { ContractService } from "../services/contract.js";
 import type { FunctionMetadata } from "../types.js";
 import type { Tools } from "../types.js";
 
-
 const GenerateToolParams = z.object({
 	contractName: z
 		.string()
@@ -17,14 +16,13 @@ const GenerateToolParams = z.object({
 		.describe("Optional chain ID associated with this log entry."),
 });
 
-
 export function generateToolsFromAbi(
 	contractService: ContractService,
 	contractName: string,
 	functions: FunctionMetadata[],
 ): Tools[] {
 	const tools: Tools[] = [];
-	for(const func of functions){
+	for (const func of functions) {
 		const toolName = `${contractName.toUpperCase()}_${func.name.toUpperCase()}`;
 
 		const tool = {
@@ -45,7 +43,7 @@ export function generateToolsFromAbi(
 					} catch (error: any) {
 						throw new Error(`Failed to parse arguments: ${error.message}`);
 					}
-					
+
 					if (func.isReadFunction) {
 						const result = await contractService.callReadFunction(
 							func.name,
@@ -73,7 +71,9 @@ export function generateToolsFromAbi(
 							? error.message
 							: "An unknown error occurred during the transaction.";
 					console.log(`[${toolName}] Error: ${message}`);
-					throw new Error(`Failed to execute function ${func.name}: ${message}`);
+					throw new Error(
+						`Failed to execute function ${func.name}: ${message}`,
+					);
 				}
 			},
 		};
