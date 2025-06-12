@@ -1,5 +1,4 @@
-import type { Context } from "fastmcp";
-import type { Abi, Chain } from "viem";
+import type { Abi, AbiParameter, Chain } from "viem";
 
 export interface AbiPluginOptions {
 	abi?: Abi;
@@ -13,13 +12,8 @@ export interface AbiPluginOptions {
 export interface FunctionMetadata {
 	name: string;
 	stateMutability: string;
-	inputs: unknown[];
-	outputs: unknown[];
+	inputs: readonly AbiParameter[];
+	outputs: readonly AbiParameter[];
 	isReadFunction: boolean;
-}
-
-export interface Tools {
-	name: string;
-	description: string;
-	execute: (args: unknown, context: Context<undefined>) => Promise<string>;
+	description?: string;
 }
