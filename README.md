@@ -29,7 +29,7 @@ There are a few ways to use `mcp-abi`:
 
 **1. Using `pnpm dlx` (Recommended for most MCP client setups):**
 
-You can run the server directly using `pnpm dlx` without needing a global installation. This is often the easiest way to integrate with MCP clients. See the "Running the Server with an MCP Client" section for examples.
+You can run the server directly using `pnpm dlx` without needing a global installation. `pnpm dlx` is a command that allows you to run packages without installing them globally. This is often the easiest way to integrate with MCP clients. See the "Running the Server with an MCP Client" section for examples.
 (`pnpm dlx` is pnpm's equivalent of `npx`)
 
 **2. Global Installation from npm (via pnpm):**
@@ -39,6 +39,8 @@ Install the package globally to make the `mcp-abi` command available system-wide
 ```bash
 pnpm add -g @iqai/mcp-abi
 ```
+
+If you install globally, you may need to set up environment variables for the `mcp-abi` command to be recognized system-wide.
 
 **3. Building from Source (for development or custom modifications):**
 
@@ -86,7 +88,7 @@ This MCP server requires certain environment variables to be set by the MCP clie
 
   - A friendly name for the contract, used as a prefix for generated tool names.
 
-- **`CHAIN_ID`**: (Optional, defaults to Fraxtal)
+- **`CHAIN_ID`**: (Optional, defaults to Fraxtal (252))
 
   - The blockchain network chain ID to interact with.
 
@@ -97,7 +99,7 @@ This MCP server requires certain environment variables to be set by the MCP clie
 
 MCP clients (like AI assistants, IDE extensions, etc.) will run this server as a background process. You need to configure the client to tell it how to start your server.
 
-Below is an example configuration snippet that an MCP client might use (e.g., in a `mcp_servers.json` or similar configuration file). This example shows how to run the server using the published npm package via `pnpm dlx`.
+Below is an example configuration snippet that an MCP client might use (e.g., in a `mcp_servers.json` or similar configuration file). This example shows how to run the server using the published npm package via `pnpm dlx`. This configuration defines an MCP server named "smart-contract-abi" that executes the `pnpm dlx @iqai/mcp-abi` command with the specified environment variables.
 
 ```json
 {
@@ -107,7 +109,7 @@ Below is an example configuration snippet that an MCP client might use (e.g., in
       "args": ["dlx", "@iqai/mcp-abi"],
       "env": {
         "WALLET_PRIVATE_KEY": "your_wallet_private_key_here",
-        "CONTRACT_ABI": "[{\"inputs\":[{\"name\":\"to\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+        "CONTRACT_ABI": "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
         "CONTRACT_ADDRESS": "0xaB195B090Cc60C1EFd4d1cEE94Bf441F5931C01b",
         "CONTRACT_NAME": "ERC20",
         "CHAIN_ID": "252",
@@ -120,7 +122,7 @@ Below is an example configuration snippet that an MCP client might use (e.g., in
 
 **Alternative if Globally Installed:**
 
-If you have installed `mcp-abi` globally (`pnpm add -g @iqai/mcp-abi`), you can simplify the `command` and `args`:
+If you have installed `mcp-abi` globally (`pnpm add -g @iqai/mcp-abi`), you can simplify the `command` and `args`. This configuration defines an MCP server named "smart-contract-abi" that executes the `mcp-abi` command with the specified environment variables.
 
 ```json
 {
