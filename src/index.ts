@@ -24,7 +24,7 @@ async function main() {
 	} = options;
 
 	if (!abi || !contractName || !contractAddress || !privateKey) {
-		throw new Error("Missing required ABI plugin options.");
+		throw new Error("Missing required ABI mcp options.");
 	}
 
 	const contractService = new ContractService(
