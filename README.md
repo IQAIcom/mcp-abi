@@ -1,115 +1,74 @@
-# MCP-ABI: Model Context Protocol Server for Smart Contract ABI Interactions
+# 🔗 ABI MCP Server
 
-This project implements a Model Context Protocol (MCP) server to interact with Ethereum-compatible smart contracts using their ABI (Application Binary Interface). It allows MCP-compatible clients (like AI assistants, IDE extensions, or custom applications) to dynamically generate and execute smart contract interactions based on contract ABIs.
+[![npm version](https://img.shields.io/npm/v/@iqai/mcp-abi.svg)](https://www.npmjs.com/package/@iqai/mcp-abi)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-This server is built using TypeScript and `fastmcp`.
+## 📖 Overview
 
-## Features (MCP Tools)
+The ABI MCP Server enables AI agents to interact with any Ethereum-compatible smart contract using its ABI (Application Binary Interface). This server dynamically generates MCP tools from contract ABIs, allowing seamless interaction with any smart contract without requiring custom tool implementations.
 
-The server dynamically exposes tools based on the provided contract ABI. Each function in the ABI becomes an available MCP tool:
+By implementing the Model Context Protocol (MCP), this server allows Large Language Models (LLMs) to read contract state, execute transactions, and interact with decentralized applications directly through their context window.
 
-- **Read Functions (view/pure)**: Query contract state without sending transactions
-  - Example: `CONTRACT_BALANCE_OF`, `CONTRACT_TOTAL_SUPPLY`, `CONTRACT_NAME`
-  - Parameters: Function-specific parameters as defined in the ABI
-- **Write Functions**: Execute state-changing transactions on the contract
-  - Example: `CONTRACT_TRANSFER`, `CONTRACT_APPROVE`, `CONTRACT_MINT`
-  - Parameters: Function-specific parameters as defined in the ABI
-  - Requires `WALLET_PRIVATE_KEY` in the environment
+## ✨ Features
 
-All tools are automatically prefixed with the contract name (e.g., `ERC20_TRANSFER` for an ERC20 contract).
+*   **Dynamic Tool Generation**: Automatically creates MCP tools from any contract ABI at runtime.
+*   **Read Functions**: Query contract state (view/pure functions) without sending transactions.
+*   **Write Functions**: Execute state-changing transactions with wallet signing support.
+*   **Multi-Chain Support**: Works with any EVM-compatible blockchain via configurable RPC endpoints.
+*   **Type-Safe Interactions**: Validates function arguments against ABI specifications.
 
-## Prerequisites
+## 📦 Installation
 
-- Node.js (v18 or newer recommended)
-- pnpm (See <https://pnpm.io/installation>)
+### 🚀 Using npx (Recommended)
 
-## Installation
-
-There are a few ways to use `mcp-abi`:
-
-**1. Using `pnpm dlx` (Recommended for most MCP client setups):**
-
-You can run the server directly using `pnpm dlx` without needing a global installation. `pnpm dlx` is a command that allows you to run packages without installing them globally. This is often the easiest way to integrate with MCP clients. See the "Running the Server with an MCP Client" section for examples.
-(`pnpm dlx` is pnpm's equivalent of `npx`)
-
-**2. Global Installation from npm (via pnpm):**
-
-Install the package globally to make the `mcp-abi` command available system-wide:
+To use this server without installing it globally:
 
 ```bash
-pnpm add -g @iqai/mcp-abi
+npx @iqai/mcp-abi
 ```
 
-If you install globally, you may need to set up environment variables for the `mcp-abi` command to be recognized system-wide.
+### 🔧 Build from Source
 
-**3. Building from Source (for development or custom modifications):**
+```bash
+git clone https://github.com/IQAIcom/mcp-abi.git
+cd mcp-abi
+pnpm install
+pnpm run build
+```
 
-1.  **Clone the repository:**
+## ⚡ Running with an MCP Client
 
-    ```bash
-    git clone https://github.com/IQAIcom/mcp-abi.git
-    cd mcp-abi
-    ```
+Add the following configuration to your MCP client settings (e.g., `claude_desktop_config.json`).
 
-2.  **Install dependencies:**
-
-    ```bash
-    pnpm install
-    ```
-
-3.  **Build the server:**
-    This compiles the TypeScript code to JavaScript in the `dist` directory.
-
-    ```bash
-    pnpm run build
-    ```
-
-    The `prepare` script also runs `pnpm run build`, so dependencies are built upon installation if you clone and run `pnpm install`.
-
-## Configuration (Environment Variables)
-
-This MCP server requires certain environment variables to be set by the MCP client that runs it. These are typically configured in the client's MCP server definition (e.g., in a `mcp.json` file for Cursor, or similar for other clients).
-
-- **`WALLET_PRIVATE_KEY`**: (Required for write functions)
-
-  - The private key of the wallet to be used for signing and sending transactions to the blockchain.
-  - **Security Note:** Handle this private key with extreme care. Ensure it is stored securely and only provided to trusted MCP client configurations.
-
-- **`CONTRACT_ABI`**: (Required)
-
-  - The JSON string representation of the contract's ABI.
-  - This defines which functions will be available as MCP tools.
-
-- **`CONTRACT_ADDRESS`**: (Required)
-
-  - The deployed contract address on the blockchain.
-
-- **`CONTRACT_NAME`**: (Optional, defaults to "CONTRACT")
-
-  - A friendly name for the contract, used as a prefix for generated tool names.
-
-- **`CHAIN_ID`**: (Optional, defaults to Fraxtal (252))
-
-  - The blockchain network chain ID to interact with.
-
-- **`RPC_URL`**: (Optional)
-  - Custom RPC endpoint URL. If not provided, uses default RPC for the specified chain.
-
-## Running the Server with an MCP Client
-
-MCP clients (like AI assistants, IDE extensions, etc.) will run this server as a background process. You need to configure the client to tell it how to start your server.
-
-Below is an example configuration snippet that an MCP client might use (e.g., in a `mcp_servers.json` or similar configuration file). This example shows how to run the server using the published npm package via `pnpm dlx`. This configuration defines an MCP server named "smart-contract-abi" that executes the `pnpm dlx @iqai/mcp-abi` command with the specified environment variables.
+### 📋 Minimal Configuration
 
 ```json
 {
   "mcpServers": {
     "smart-contract-abi": {
-      "command": "pnpm",
-      "args": ["dlx", "@iqai/mcp-abi"],
+      "command": "npx",
+      "args": ["-y", "@iqai/mcp-abi"],
+      "env": {
+        "CONTRACT_ABI": "[{\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+        "CONTRACT_ADDRESS": "0xaB195B090Cc60C1EFd4d1cEE94Bf441F5931C01b",
+        "CONTRACT_NAME": "ERC20"
+      }
+    }
+  }
+}
+```
+
+### ⚙️ Advanced Configuration (Local Build)
+
+```json
+{
+  "mcpServers": {
+    "smart-contract-abi": {
+      "command": "node",
+      "args": ["/absolute/path/to/mcp-abi/dist/index.js"],
       "env": {
         "WALLET_PRIVATE_KEY": "your_wallet_private_key_here",
-        "CONTRACT_ABI": "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+        "CONTRACT_ABI": "[{\"inputs\":[{\"name\":\"to\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
         "CONTRACT_ADDRESS": "0xaB195B090Cc60C1EFd4d1cEE94Bf441F5931C01b",
         "CONTRACT_NAME": "ERC20",
         "CHAIN_ID": "252",
@@ -120,84 +79,85 @@ Below is an example configuration snippet that an MCP client might use (e.g., in
 }
 ```
 
-**Alternative if Globally Installed:**
+## 🔐 Configuration (Environment Variables)
 
-If you have installed `mcp-abi` globally (`pnpm add -g @iqai/mcp-abi`), you can simplify the `command` and `args`. This configuration defines an MCP server named "smart-contract-abi" that executes the `mcp-abi` command with the specified environment variables.
+| Variable | Required | Description | Default |
+| :--- | :--- | :--- | :--- |
+| `CONTRACT_ABI` | Yes | JSON string representation of the contract's ABI | - |
+| `CONTRACT_ADDRESS` | Yes | The deployed contract address on the blockchain | - |
+| `CONTRACT_NAME` | No | Friendly name for the contract (used as tool name prefix) | `CONTRACT` |
+| `WALLET_PRIVATE_KEY` | For writes | Private key for signing transactions (required for write functions) | - |
+| `CHAIN_ID` | No | Blockchain network chain ID | `252` (Fraxtal) |
+| `RPC_URL` | No | Custom RPC endpoint URL | Default for chain |
 
-```json
-{
-  "mcpServers": {
-    "smart-contract-abi": {
-      "command": "mcp-abi",
-      "args": [],
-      "env": {
-        "WALLET_PRIVATE_KEY": "your_wallet_private_key_here",
-        "CONTRACT_ABI": "[{\"inputs\":[{\"name\":\"to\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
-        "CONTRACT_ADDRESS": "0xaB195B090Cc60C1EFd4d1cEE94Bf441F5931C01b",
-        "CONTRACT_NAME": "ERC20",
-        "CHAIN_ID": "252"
-      }
-    }
-  }
-}
+## 💡 Usage Examples
+
+### 🔍 Read Contract State
+*   "Check the token balance of wallet 0xabc..."
+*   "What is the total supply of this token?"
+*   "Get the allowance for spender 0x123... from owner 0x456..."
+
+### 📝 Execute Transactions
+*   "Transfer 100 tokens to address 0xabc..."
+*   "Approve 0x123... to spend 1000 tokens"
+*   "Mint a new NFT to wallet 0xdef..."
+
+### 📊 Contract Analysis
+*   "What functions are available on this contract?"
+*   "Show me all the read functions I can call"
+*   "What parameters does the transfer function require?"
+
+## 🛠️ MCP Tools
+
+Tools are dynamically generated based on the provided contract ABI. Each function in the ABI becomes an MCP tool:
+
+*   **Read Functions (view/pure)**: Tools prefixed with contract name (e.g., `erc20_balanceOf`, `erc20_totalSupply`)
+*   **Write Functions**: Tools for state-changing operations (e.g., `erc20_transfer`, `erc20_approve`)
+
+Example tool names for an ERC20 contract with `CONTRACT_NAME=ERC20`:
+*   `erc20_balanceOf` - Query token balance
+*   `erc20_transfer` - Transfer tokens
+*   `erc20_approve` - Approve spending
+*   `erc20_allowance` - Check allowance
+
+<!-- AUTO-GENERATED TOOLS START -->
+
+<!-- AUTO-GENERATED TOOLS END -->
+
+## 👨‍💻 Development
+
+### 🏗️ Build Project
+```bash
+pnpm run build
 ```
 
-- **`command`**: The executable to run.
-  - For `pnpm dlx`: `"pnpm"` (with `"dlx"` as the first arg)
-  - For global install: `"mcp-abi"`
-- **`args`**: An array of arguments to pass to the command.
-  - For `pnpm dlx`: `["dlx", "@iqai/mcp-abi"]`
-  - For global install: `[]`
-- **`env`**: An object containing environment variables to be set when the server process starts. This is where you provide `WALLET_PRIVATE_KEY`, `CONTRACT_ABI`, `CONTRACT_ADDRESS`, and other configuration options.
-
-## Example Usage Scenarios
-
-**ERC20 Token Contract:**
-
-- Check token balance: Use `ERC20_BALANCE_OF` tool with an address parameter
-- Transfer tokens: Use `ERC20_TRANSFER` tool with recipient address and amount
-- Check allowances: Use `ERC20_ALLOWANCE` tool with owner and spender addresses
-- Approve spending: Use `ERC20_APPROVE` tool with spender address and amount
-
-**NFT Contract (ERC721):**
-
-- Check token ownership: Use `NFT_OWNER_OF` tool with token ID
-- Transfer NFT: Use `NFT_TRANSFER_FROM` tool with from address, to address, and token ID
-- Mint new token: Use `NFT_MINT` tool with recipient address and token metadata
-
-## Response Format
-
-**Read Functions:**
-
-```
-✅ Successfully called balanceOf
-Result: "1000000000000000000"
+### 👁️ Development Mode (Watch)
+```bash
+pnpm run watch
 ```
 
-**Write Functions:**
-
-```
-✅ Successfully executed transfer
-Transaction hash: 0x123abc...
-You can view this transaction on the blockchain explorer.
+### ✅ Linting & Formatting
+```bash
+pnpm run lint
+pnpm run format
 ```
 
-## Error Handling
+### 📁 Project Structure
+*   `src/tools/`: Tool generation logic
+*   `src/services/`: Contract interaction service
+*   `src/lib/`: Shared utilities
+*   `src/index.ts`: Server entry point
 
-The server provides comprehensive error handling for various blockchain interaction scenarios:
+## 📚 Resources
 
-- 🚨 **Invalid function arguments** - "❌ Error parsing arguments: [specific error]"
-- 🔄 **Transaction failures** - "❌ Error with [function]: [error message]"
-- 🔒 **Access control errors** - "❌ Error with [function]: execution reverted"
-- 🌐 **Network errors** - "❌ Error with [function]: network connection failed"
-- 💲 **Insufficient funds** - "❌ Error with [function]: insufficient funds for gas"
-- 📄 **ABI parsing errors** - "❌ Invalid ABI format: [specific error]"
-- 🏠 **Contract address errors** - "❌ Invalid contract address: [address]"
+*   [Model Context Protocol (MCP)](https://modelcontextprotocol.io)
+*   [Ethereum ABI Specification](https://docs.soliditylang.org/en/latest/abi-spec.html)
+*   [Viem Documentation](https://viem.sh)
 
-## Security Considerations
+## ⚠️ Disclaimer
 
-- Store private keys securely and never commit them to version control
-- Use environment variables for sensitive configuration
-- Validate all contract interactions before execution
-- Consider using hardware wallets or secure key management solutions for production use
-- Always test interactions on testnets before mainnet deployment
+This tool interacts with blockchain smart contracts and can execute real transactions. Store private keys securely and never commit them to version control. Always test interactions on testnets before mainnet deployment. Trading and interacting with smart contracts involves risk.
+
+## 📄 License
+
+[ISC](LICENSE)
