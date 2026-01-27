@@ -122,6 +122,8 @@ Example tool names for an ERC20 contract with `CONTRACT_NAME=ERC20`:
 
 <!-- AUTO-GENERATED TOOLS START -->
 
+
+
 <!-- AUTO-GENERATED TOOLS END -->
 
 ## 👨‍💻 Development
