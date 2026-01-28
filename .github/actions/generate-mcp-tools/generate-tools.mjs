@@ -1,129 +1,81 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { zodToJsonSchema } from "zod-to-json-schema";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../../..");
 const README_PATH = path.join(ROOT, "README.md");
-const TOOLS_DIR = path.join(ROOT, "src", "tools");
 
 const START = "<!-- AUTO-GENERATED TOOLS START -->";
 const END = "<!-- AUTO-GENERATED TOOLS END -->";
 
 /**
- * Load MCP tools
- * Scans for any export that looks like an MCP tool:
- * {
- *   name: string,
- *   description: string,
- *   parameters?: ZodSchema
- *   schema?: JSONSchema
- * }
+ * Generate documentation for mcp-abi's dynamic tool generation
+ *
+ * mcp-abi generates tools dynamically from contract ABIs at runtime.
+ * This means the actual tools depend on which contract ABI is loaded.
  */
-async function loadTools() {
-	const files = fs
-		.readdirSync(TOOLS_DIR)
-		.filter((f) => f.endsWith(".ts") && f !== "index.ts");
+function generateDynamicToolDocs() {
+	return `
+> **Note:** Tools are generated dynamically based on the loaded contract ABI.
+> The tool names follow the pattern \`{contractname}_{functionname}\`.
 
-	const toolPromises = files.map(async (file) => {
-		const mod = await import(path.join(TOOLS_DIR, file));
+### Dynamic Tool Generation
 
-		const matches = Object.values(mod).filter(
-			(exp) =>
-				exp &&
-				typeof exp === "object" &&
-				typeof exp.name === "string" &&
-				typeof exp.description === "string" &&
-				(exp.parameters || exp.schema),
-		);
+When you load a contract ABI, tools are automatically created for each function in the ABI:
 
-		if (matches.length === 0) {
-			return null;
-		}
+- **Read functions** become query tools (no gas required)
+- **Write functions** become execution tools (requires wallet)
 
-		if (matches.length > 1) {
-			console.warn(
-				`Warning: ${file} exports multiple MCP-like tools. Using the first one.`,
-			);
-		}
+### Common Parameters
 
-		return matches[0];
-	});
+All generated tools accept the same parameter schema:
 
-	const loadedTools = await Promise.all(toolPromises);
-	const tools = loadedTools.filter(Boolean);
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| \`args\` | array | No | \`[]\` | Function arguments as an array. Example: \`["0x123...", 100, true]\` |
 
-	return tools.sort((a, b) => a.name.localeCompare(b.name));
+### Example Generated Tools
+
+If you load an ERC-20 token contract named "USDC", the following tools would be generated:
+
+- \`usdc_name\` - Query the token name
+- \`usdc_symbol\` - Query the token symbol
+- \`usdc_decimals\` - Query token decimals
+- \`usdc_totalSupply\` - Query total token supply
+- \`usdc_balanceOf\` - Query balance of an address
+- \`usdc_transfer\` - Transfer tokens to an address
+- \`usdc_approve\` - Approve spending allowance
+- \`usdc_transferFrom\` - Transfer tokens on behalf of another address
+
+### Tool Response Format
+
+**Read Functions:**
+\`\`\`
+✅ Successfully queried {functionName}
+
+📊 Result:
+{JSON result}
+\`\`\`
+
+**Write Functions:**
+\`\`\`
+✅ Successfully executed {functionName}
+
+🔗 Transaction Hash: {hash}
+📦 Block Number: {blockNumber}
+⛽ Gas Used: {gasUsed}
+✅ Status: Success
+\`\`\`
+`.trim();
 }
 
-function renderSchema(schema) {
-	if (!schema) {
-		return "_No parameters_";
-	}
-
-	// If this is a Zod schema, convert it to JSON Schema
-	const jsonSchema =
-		typeof schema.safeParse === "function" ? zodToJsonSchema(schema) : schema;
-
-	const properties = jsonSchema.properties ?? {};
-	const required = new Set(jsonSchema.required ?? []);
-
-	if (Object.keys(properties).length === 0) {
-		return "_No parameters_";
-	}
-
-	// Check if any param has a default value to determine table columns
-	const hasDefaults = Object.values(properties).some(
-		(prop) => prop.default !== undefined,
-	);
-
-	// Build table header
-	let table = hasDefaults
-		? "| Parameter | Type | Required | Default | Description |\n|-----------|------|----------|---------|-------------|\n"
-		: "| Parameter | Type | Required | Description |\n|-----------|------|----------|-------------|\n";
-
-	// Build table rows
-	for (const [key, prop] of Object.entries(properties)) {
-		const type = Array.isArray(prop.type)
-			? prop.type.join(" | ")
-			: (prop.type ?? "unknown");
-
-		const requiredStr = required.has(key) ? "✅" : "";
-		const description = prop.description ?? "";
-		const defaultVal =
-			prop.default !== undefined ? JSON.stringify(prop.default) : "";
-
-		if (hasDefaults) {
-			table += `| \`${key}\` | ${type} | ${requiredStr} | ${defaultVal} | ${description} |\n`;
-		} else {
-			table += `| \`${key}\` | ${type} | ${requiredStr} | ${description} |\n`;
-		}
-	}
-
-	return table.trim();
-}
-
-function renderMarkdown(tools) {
-	let md = "";
-
-	for (const tool of tools) {
-		const schema = tool.parameters || tool.schema;
-
-		md += `### \`${tool.name}\`\n`;
-		md += `${tool.description}\n\n`;
-		md += `${renderSchema(schema)}\n\n`;
-	}
-
-	return md.trim();
-}
-
-function updateReadme({ readme, tools }) {
+function updateReadme(readme) {
 	if (!readme.includes(START) || !readme.includes(END)) {
 		throw new Error("README missing AUTO-GENERATED TOOLS markers");
 	}
 
-	const toolsMd = renderMarkdown(tools);
+	const toolsMd = generateDynamicToolDocs();
 
 	return readme.replace(
 		new RegExp(`${START}[\\s\\S]*?${END}`, "m"),
@@ -134,16 +86,10 @@ function updateReadme({ readme, tools }) {
 async function main() {
 	try {
 		const readme = fs.readFileSync(README_PATH, "utf8");
-		const tools = await loadTools();
-
-		if (tools.length === 0) {
-			console.warn("Warning: No tools found!");
-		}
-
-		const updated = updateReadme({ readme, tools });
+		const updated = updateReadme(readme);
 
 		fs.writeFileSync(README_PATH, updated);
-		console.log(`Synced ${tools.length} MCP tools to README.md`);
+		console.log("Generated dynamic tool documentation for mcp-abi");
 	} catch (error) {
 		console.error("Error updating README:", error);
 		process.exit(1);
